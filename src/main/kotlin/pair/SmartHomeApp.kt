@@ -1,4 +1,4 @@
-package org.example
+package pair
 
 /**
  * Smart Home Example

@@ -1,3 +1,5 @@
+package example
+
 /**
  * Smart Home Example
  */
@@ -8,7 +10,7 @@ class B9000: Bulb {
     fun turnOff() {
         println("turnOff")
     }
-}g
+}
 
 class S9000: Switch {
     fun isOn(): Boolean {
