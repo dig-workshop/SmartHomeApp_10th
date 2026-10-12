@@ -3,17 +3,26 @@ package example
 /**
  * Smart Home Example
  */
+interface Bulb {
+    fun turnOn()
+    fun turnOff()
+}
+
+interface Switch {
+    fun isOn(): Boolean
+}
+
 class B9000: Bulb {
-    fun turnOn() {
+    override fun turnOn() {
         println("turnOn")
     }
-    fun turnOff() {
+    override fun turnOff() {
         println("turnOff")
     }
 }
 
 class S9000: Switch {
-    fun isOn(): Boolean {
+    override fun isOn(): Boolean {
         return true
     }
 }

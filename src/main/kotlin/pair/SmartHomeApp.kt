@@ -27,8 +27,25 @@ class S9000: Switch {
     }
 }
 
+//TVを追加する場合、on/offの制御はrun関数でそのまま対応可能であること
+class TV9000 : OnOffThing {
+    var isOn = false
+
+    override fun turnOn() {
+        isOn = true
+    }
+
+    override fun turnOff() {
+        isOn = false
+    }
+}
+
 fun run(thing: OnOffThing, switch: Switch) {
-    // ???
+    if (switch.isOn()) {
+        thing.turnOn()
+    } else {
+        thing.turnOff()
+    }
 }
 
 fun main() {
