@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="全15枚に図解を掲載。解答ブランチの短いKotlinコードと図で、SOLID原則をD・S・O・L・Iの順に学ぶスライド。">
+  <title>SOLIDの原則 | Smart Home Workshop</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #000;
+      --important: #c00000;
+      --detail: #0050b3;
+      --muted: var(--detail);
+      --paper: #fff;
+      --line: #d0d0d0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.7;
+    }
+
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { font: inherit; cursor: pointer; }
+    button:disabled { cursor: default; opacity: .38; }
+    button, a, pre, section { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid var(--detail); }
+    a { color: var(--detail); text-underline-offset: .2em; }
+    h1, h2, h3, p, pre, ul, ol { margin: 0; }
+    h1, h2, h3 { line-height: 1.4; letter-spacing: -.035em; text-align: center; }
+    strong { color: var(--important); font-weight: 750; }
+
+    code, kbd {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: .9em;
+    }
+
+    :not(pre) > code {
+      padding: .12em .35em;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: var(--paper);
+      overflow-wrap: anywhere;
+    }
+
+    kbd {
+      padding: .12em .4em;
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      background: var(--paper);
+    }
+
+    .deck-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      max-width: 1440px;
+      margin: auto;
+      padding: 18px 28px;
+      font-size: .73rem;
+      font-weight: 750;
+      letter-spacing: .12em;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-mark { width: 12px; height: 12px; border-radius: 3px; background: var(--ink); }
+    .deck-meta { color: var(--muted); }
+    main { max-width: 1440px; margin: auto; padding: 0 24px 110px; }
+
+    .slide {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+      min-height: calc(100svh - 166px);
+      margin-bottom: 24px;
+      padding: clamp(24px, 3svh, 32px) clamp(24px, 3vw, 42px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      scroll-margin-top: 72px;
+    }
+
+    .slide > header,
+    .slide > .columns,
+    .slide > .cards,
+    .slide > .goal,
+    .slide > .one-line,
+    .slide > .summary-table,
+    .slide > .principle-strip,
+    .slide > .panel,
+    .slide > .diagram,
+    .slide-footer {
+      width: 100%;
+      max-width: 1120px;
+      align-self: center;
+    }
+
+    .slide > header { text-align: center; }
+    .eyebrow { color: var(--ink); font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-align: center; }
+    h2 { margin-top: 8px; font-size: clamp(1.6rem, 2.65vw, 2.65rem); }
+    h3 { font-size: 1.12rem; }
+    .lead { max-width: 64em; margin: 10px auto 0; color: var(--detail); font-size: 1rem; line-height: 1.6; text-align: center; }
+    .columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: stretch; }
+    .columns.equal { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .columns > div:not(.code-card):not(.reason-list) { display: flex; flex-direction: column; }
+    .columns > div > .code-card { flex: 1; }
+    .columns > .stack { justify-content: center; }
+    .stack { display: grid; gap: 18px; }
+    .points { display: grid; gap: 12px; padding-left: 1.25em; }
+    .points li::marker { color: var(--ink); }
+    .muted, .note { color: var(--muted); }
+    .note { font-size: .875rem; text-align: center; }
+    .slide-footer { text-align: center; }
+    .takeaway { padding-top: 10px; border-top: 1px solid var(--line); font-size: .93rem; text-align: center; }
+    .source { margin-top: 6px; color: var(--detail); font-size: .75rem; line-height: 1.4; overflow-wrap: anywhere; }
+    .read-guide { margin-top: 8px; color: var(--detail); font-size: .875rem; line-height: 1.6; text-align: center; }
+    .code-note { margin-top: 10px; color: var(--detail); font-size: .9rem; text-align: center; }
+
+    .slide.with-corner-note { padding-bottom: 84px; }
+    .slide.with-branch-list { padding-bottom: 164px; }
+    .slide-corner-note {
+      position: absolute;
+      right: clamp(24px, 3vw, 42px);
+      bottom: 20px;
+      max-width: calc(100% - 48px);
+      color: var(--ink);
+      font-size: .75rem;
+      line-height: 1.5;
+      text-align: right;
+    }
+    .legend-important { color: var(--important); font-weight: 750; }
+    .legend-detail { color: var(--detail); }
+    .branch-reference { border-collapse: collapse; max-width: 100%; }
+    .branch-reference caption { margin-bottom: 6px; font-weight: 750; text-align: right; }
+    .branch-reference th, .branch-reference td { padding: 1px 0; text-align: left; vertical-align: top; }
+    .branch-reference th { font-weight: 600; white-space: nowrap; }
+    .branch-reference td { padding-left: 14px; color: var(--detail); overflow-wrap: anywhere; }
+    .branch-reference a { font-family: "SFMono-Regular", Consolas, monospace; }
+
+    .one-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+      padding: 16px 22px;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--important);
+      border-radius: 4px;
+      background: var(--paper);
+      text-align: center;
+    }
+
+    .one-line span { color: var(--ink); font-size: .83rem; font-weight: 800; white-space: nowrap; }
+    .one-line strong { font-size: clamp(1rem, 1.55vw, 1.4rem); }
+    .panel { padding: 20px 22px; border: 1px solid var(--line); border-radius: 6px; text-align: center; }
+    .panel h3 { margin-bottom: 10px; }
+    .panel p { color: var(--detail); }
+    .panel.accent { background: var(--paper); }
+    .label { color: var(--ink); font-size: .7rem; font-weight: 800; letter-spacing: .08em; }
+
+    .code-card {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    .code-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 17px;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink);
+      font-size: .72rem;
+      font-weight: 600;
+    }
+
+    .code-card pre {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      padding: 18px 20px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: .9rem;
+      line-height: 1.5;
+      tab-size: 4;
+    }
+    .code-card code { display: block; width: 100%; font-size: inherit; line-height: inherit; text-align: left; }
+    .kw, .type, .str { color: var(--ink); }
+    .comment { color: var(--detail); }
+
+    figure { margin: 0; }
+    .diagram-defs { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; }
+    .diagram {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--paper);
+    }
+    .diagram svg { display: block; width: 100%; max-width: 560px; height: auto; max-height: 260px; }
+    .diagram.full svg { max-height: 300px; }
+    .diagram figcaption { color: var(--detail); font-size: .9rem; line-height: 1.5; text-align: center; }
+    .diagram text { fill: var(--ink); font-family: inherit; font-size: 22px; text-anchor: middle; dominant-baseline: middle; }
+    .diagram .detail-text { fill: var(--detail); font-size: 18px; }
+    .diagram .key-text { fill: var(--important); font-weight: 750; }
+    .diagram .code-text { font-family: "SFMono-Regular", Consolas, monospace; font-size: 18px; }
+    .diagram .letter { font-size: 30px; font-weight: 750; }
+    .diagram .node { fill: var(--paper); stroke: var(--ink); stroke-width: 1.7; }
+    .diagram .node-key { stroke: var(--important); stroke-width: 2.5; }
+    .diagram .flow { fill: none; stroke: var(--ink); stroke-width: 2; marker-end: url(#diagram-arrow); }
+    .diagram .flow-key { stroke: var(--important); marker-end: url(#diagram-arrow-key); }
+    .diagram-icon { fill: none; stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    #diagram-arrow path { fill: var(--ink); }
+    #diagram-arrow-key path { fill: var(--important); }
+
+    .cover { justify-content: center; gap: 32px; text-align: center; }
+    .cover-word { color: var(--ink); font-size: clamp(4.5rem, 8vw, 7rem); font-weight: 850; line-height: 1; letter-spacing: -.08em; }
+    h1 { margin-top: 18px; font-size: clamp(1.8rem, 3.2vw, 2.8rem); }
+    .cover .lead { margin-top: 18px; }
+    .meta-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+    .pill { padding: 5px 12px; border: 1px solid var(--line); border-radius: 99px; font-size: .72rem; font-weight: 700; }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; width: 100%; max-width: 1120px; align-self: center; }
+    .cards .panel { text-align: center; }
+    .cards .label { display: block; margin-bottom: 10px; }
+    .goal { padding: 20px 24px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); text-align: center; }
+    .goal h3 { margin-bottom: 8px; }
+    .goal p { color: var(--detail); }
+    .goal strong { font-size: 1.15rem; }
+
+    .principle-strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+    .principle-chip { padding: 13px 15px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); text-align: center; }
+    .principle-chip b { display: block; color: var(--ink); font-size: 1.5rem; }
+    .principle-chip span { display: block; font-size: .78rem; font-weight: 650; }
+    .principle-chip small { display: block; margin-top: 4px; color: var(--muted); font-size: .73rem; }
+    .reason-list { display: grid; gap: 14px; }
+    .reason { padding: 14px 18px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); text-align: center; }
+    .reason strong, .reason small { display: block; }
+    .reason small { margin-top: 3px; color: var(--muted); }
+
+    .summary-table { width: 100%; border-collapse: collapse; font-size: .94rem; }
+    .summary-table th, .summary-table td { padding: 9px 14px; border-bottom: 1px solid var(--line); text-align: center; vertical-align: middle; }
+    .summary-table thead th { color: var(--ink); font-size: .72rem; font-weight: 750; letter-spacing: .06em; }
+    .summary-table tbody th { width: 37%; font-weight: 700; }
+    .summary-table tbody td { color: var(--detail); }
+    .summary-table .initial { display: inline-block; width: 1.5em; color: var(--ink); font-size: 1.15rem; }
+
+    .controls {
+      position: fixed;
+      z-index: 10;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      border-top: 1px solid var(--line);
+      background: var(--paper);
+    }
+
+    .controls-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; max-width: 1440px; margin: auto; padding: 13px 28px; }
+    .navigation, .tools { display: flex; align-items: center; gap: 10px; }
+    .button { min-height: 42px; padding: 8px 15px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: var(--paper); font-size: .84rem; font-weight: 650; }
+    .button:hover:not(:disabled) { border-color: var(--ink); text-decoration: underline; }
+    .button.primary { border-color: var(--ink); font-weight: 750; }
+    .counter { min-width: 72px; color: var(--ink); text-align: center; font-family: "SFMono-Regular", Consolas, monospace; font-size: .9rem; font-weight: 700; }
+    .keyboard-hint { color: var(--muted); font-size: .72rem; }
+    progress { display: block; width: 100%; height: 4px; border: 0; appearance: none; background: var(--line); }
+    progress::-webkit-progress-bar { background: var(--line); }
+    progress::-webkit-progress-value { background: var(--ink); }
+    progress::-moz-progress-bar { background: var(--ink); }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .noscript { max-width: 1392px; margin: 0 auto 20px; padding: 15px 24px; border: 1px solid var(--line); color: var(--detail); background: var(--paper); }
+
+    dialog { width: min(900px, calc(100% - 32px)); max-height: 86svh; padding: 28px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--paper); }
+    dialog::backdrop { background: #0006; }
+    .dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+    .dialog-heading h2 { margin: 0; font-size: 1.5rem; }
+    .outline { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; padding: 0; list-style: none; }
+    .outline button { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: var(--paper); text-align: left; font-size: .88rem; }
+    .outline button:hover, .outline button[aria-current] { border-color: var(--ink); text-decoration: underline; }
+    .outline-number { margin-right: 12px; color: var(--ink); font-family: monospace; font-weight: 800; }
+
+    @media screen and (min-width: 901px) and (max-height: 850px) {
+      .deck-header { padding: 12px 28px; }
+      main { padding-bottom: 92px; }
+      .slide { min-height: calc(100svh - 136px); padding: 22px 32px; gap: 14px; }
+      .slide-corner-note { right: 32px; }
+      h2 { margin-top: 6px; font-size: clamp(1.6rem, 2.45vw, 2.2rem); }
+      .lead { margin-top: 6px; font-size: .96rem; }
+      .one-line { padding: 12px 18px; }
+      .one-line strong { font-size: 1.1rem; }
+      .code-title { padding: 8px 15px; }
+      .code-card pre { padding: 14px 18px; font-size: .85rem; line-height: 1.5; }
+      .diagram svg { max-height: 220px; }
+      .diagram.full svg { max-height: 250px; }
+      .takeaway { padding-top: 12px; font-size: .85rem; }
+      .panel { padding: 16px 18px; }
+      .stack { gap: 14px; }
+      .reason { padding: 11px 15px; }
+      .points { gap: 10px; }
+      .summary-table th, .summary-table td { padding: 8px 12px; }
+    }
+
+    @media (max-width: 900px) {
+      .slide { gap: 20px; padding: 28px; }
+      .slide.with-corner-note { padding-bottom: 28px; }
+      .slide-corner-note { position: static; align-self: flex-end; max-width: 100%; margin-top: 8px; }
+      .columns, .columns.equal, .cards { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+      .cover-word { font-size: 6rem; }
+      .principle-strip { gap: 8px; }
+      .principle-chip { padding: 10px; }
+      .principle-chip b, .principle-chip span { display: block; }
+      .code-card pre { font-size: .86rem; }
+      .keyboard-hint { display: none; }
+    }
+
+    @media (max-width: 560px) {
+      .deck-header { padding: 15px 16px; font-size: .66rem; }
+      .deck-meta { display: none; }
+      main { padding: 0 10px 128px; }
+      .slide { min-height: calc(100svh - 170px); padding: 22px 18px; }
+      .slide.with-corner-note { padding-bottom: 22px; }
+      .branch-guide { width: 100%; }
+      .branch-reference { width: 100%; table-layout: fixed; }
+      .branch-reference th { width: 44%; white-space: normal; }
+      h1 { font-size: 1.8rem; }
+      h2 { font-size: 1.55rem; }
+      .cover-word { font-size: 4.5rem; }
+      .principle-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .principle-chip { padding: 9px 10px; }
+      .principle-chip b { font-size: 1rem; }
+      .principle-chip span { font-size: .66rem; }
+      .one-line { padding: 13px 15px; }
+      .code-card pre { padding: 16px 14px; font-size: .8rem; }
+      .diagram { padding: 12px 8px; }
+      .diagram .detail-text, .diagram .code-text { font-size: 19px; }
+      .controls-inner { flex-wrap: wrap; justify-content: center; gap: 8px 20px; padding: 10px; }
+      .tools .button { min-height: 34px; padding: 5px 13px; font-size: .74rem; }
+      .summary-table { font-size: .8rem; }
+      .summary-table th, .summary-table td { padding: 10px 6px; }
+      .outline { grid-template-columns: minmax(0, 1fr); }
+      dialog { padding: 20px; }
+    }
+
+    @page { size: A4 landscape; margin: 0; }
+
+    @media print {
+      :root { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      html, body { margin: 0; background: #fff; }
+      .deck-header, .controls, dialog, .noscript { display: none !important; }
+      main { max-width: none; padding: 0; }
+      .slide, .slide[hidden] {
+        display: flex !important;
+        width: 297mm;
+        height: 210mm;
+        min-height: 0;
+        margin: 0;
+        padding: 12mm 15mm;
+        gap: 5mm;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        break-after: page;
+        break-inside: avoid;
+      }
+      .slide:last-child { break-after: auto; }
+      .slide.with-corner-note { padding-bottom: 25mm; }
+      .slide.with-branch-list { padding-bottom: 48mm; }
+      .slide-corner-note { position: absolute; right: 15mm; bottom: 12mm; max-width: calc(100% - 30mm); margin-top: 0; font-size: 8pt; }
+      .branch-guide { width: auto; }
+      .branch-reference { width: auto; table-layout: auto; }
+      .branch-reference th { width: auto; white-space: nowrap; }
+      .slide::after { content: attr(data-page) " / 15"; position: absolute; right: 15mm; bottom: 5mm; color: var(--ink); font: 9pt monospace; }
+      .columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 7mm; }
+      .columns.equal { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+      .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5mm; }
+      .cover-word { font-size: 62pt; }
+      h1 { font-size: 28pt; }
+      h2 { font-size: 24pt; }
+      h3 { font-size: 12pt; }
+      .lead, .points, .panel, .reason, .takeaway { font-size: 10pt; }
+      .eyebrow, .note, .code-title, .pill, .read-guide, .code-note { font-size: 8pt; }
+      .source { font-size: 7pt; }
+      .code-card pre { padding: 4mm 5mm; overflow: visible; font-size: 9pt; line-height: 1.45; }
+      .diagram { padding: 3mm; gap: 2mm; }
+      .diagram svg { max-height: 64mm; }
+      .diagram.full svg { max-height: 70mm; }
+      .diagram figcaption { font-size: 9pt; }
+      .one-line { padding: 3mm 5mm; }
+      .one-line span { font-size: 9pt; }
+      .one-line strong { font-size: 13pt; }
+      .summary-table { font-size: 10pt; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="deck-header">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span> SOLID / SMART HOME WORKSHOP</div>
+    <span class="deck-meta">KOTLIN · D → S → O → L → I · 全15枚</span>
+  </header>
+
+  <noscript><p class="noscript">JavaScriptが無効なため、全15枚を縦に表示しています。印刷・PDF保存も利用できます。</p></noscript>
+
+  <svg class="diagram-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <defs>
+      <marker id="diagram-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0 0L8 4L0 8Z"/>
+      </marker>
+      <marker id="diagram-arrow-key" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0 0L8 4L0 8Z"/>
+      </marker>
+      <symbol id="diagram-bulb" viewBox="0 0 64 72">
+        <circle cx="32" cy="24" r="18"/>
+        <path d="M24 40V48H40V40M24 49H40V57H24ZM28 63H36M26 27L32 37L38 27M32 0V3M4 24H9M55 24H60M11 5L15 10M49 10L53 5"/>
+      </symbol>
+      <symbol id="diagram-switch" viewBox="0 0 80 60">
+        <rect x="5" y="12" width="70" height="36" rx="18"/>
+        <circle cx="55" cy="30" r="12"/>
+      </symbol>
+      <symbol id="diagram-tv" viewBox="0 0 80 64">
+        <rect x="7" y="9" width="66" height="42" rx="4"/>
+        <path d="M40 51V59M23 59H57M26 1L40 9L54 1"/>
+      </symbol>
+      <symbol id="diagram-file" viewBox="0 0 64 80">
+        <path d="M12 4H39L53 18V76H12ZM39 4V19H53M21 32H44M21 44H44M21 56H39"/>
+      </symbol>
+      <symbol id="diagram-code" viewBox="0 0 64 64">
+        <path d="M23 14L8 32L23 50M41 14L56 32L41 50M37 8L27 56"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <main id="slides" aria-label="SOLID原則のスライド">
+    <section class="slide cover with-corner-note" id="slide-1" data-page="1" data-title="電球とスイッチで学ぶSOLIDの5原則" aria-labelledby="title-1" tabindex="-1">
+      <header>
+        <p class="eyebrow">01 / 小さな変更を、小さな修正で済ませるために</p>
+        <h1 id="title-1">電球とスイッチで学ぶ<br>SOLIDの5原則</h1>
+        <p class="lead">機器が変わっても、直す場所は小さく。</p>
+      </header>
+      <figure class="diagram full" data-diagram="device-replacement">
+        <svg viewBox="0 0 480 240" role="img" aria-labelledby="diagram-1-title" aria-describedby="diagram-1-desc">
+          <title id="diagram-1-title">電球をテレビに替えても判断は共通</title>
+          <desc id="diagram-1-desc">電球からテレビへ交換する。どちらも、点ける・消す判断は同じものを使う。</desc>
+          <rect class="node" x="30" y="15" width="170" height="130" rx="8"/>
+          <use class="diagram-icon" href="#diagram-bulb" x="88" y="25" width="54" height="68"/>
+          <text x="115" y="117">電球</text>
+          <rect class="node" x="280" y="15" width="170" height="130" rx="8"/>
+          <use class="diagram-icon" href="#diagram-tv" x="330" y="30" width="70" height="62"/>
+          <text x="365" y="117">テレビ</text>
+          <path class="flow flow-key" d="M212 80H268"/>
+          <text class="detail-text" x="240" y="53">交換</text>
+          <path class="flow" d="M115 145V162H190V177"/>
+          <path class="flow" d="M365 145V162H290V177"/>
+          <rect class="node node-key" x="115" y="182" width="250" height="45" rx="8"/>
+          <text class="key-text" x="240" y="205">判断はそのまま</text>
+        </svg>
+        <figcaption>解答ブランチのコードで、変更を小さくする考え方を学びます。</figcaption>
+      </figure>
+      <div class="meta-row">
+        <span class="pill">全15枚</span>
+        <span class="pill">説明順：D → S → O → L → I</span>
+      </div>
+      <aside class="slide-corner-note color-guide" aria-label="配色の説明">
+        <p>このスライドの強調は<span class="legend-important">赤色</span>です。<br><span class="legend-detail">青色は詳細な説明に使用しています。</span></p>
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-2" data-page="2" data-title="なぜSOLIDを使うのか・何を学ぶのか" aria-labelledby="title-2" tabindex="-1">
+      <header>
+        <p class="eyebrow">02 / 使う理由と、学ぶ目的</p>
+        <h2 id="title-2">なぜSOLIDを使うのか？</h2>
+        <p class="lead">機器の追加で、動いている他の処理まで直さないためです。</p>
+      </header>
+      <figure class="diagram full" data-diagram="change-scope-comparison">
+        <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-2-title" aria-describedby="diagram-2-desc">
+          <title id="diagram-2-title">修正が広がる設計と必要な場所だけ直す設計</title>
+          <desc id="diagram-2-desc">上段は機器の変更が判断と読み取りにも広がる。下段は役割が分かれ、機器だけを変更できる。赤い枠は変更する場所。</desc>
+          <text class="detail-text" x="240" y="25">まとめていると、周りも修正</text>
+          <rect class="node node-key" x="15" y="55" width="130" height="55" rx="7"/>
+          <rect class="node node-key" x="175" y="55" width="130" height="55" rx="7"/>
+          <rect class="node node-key" x="335" y="55" width="130" height="55" rx="7"/>
+          <text x="80" y="84">機器</text><text x="240" y="84">判断</text><text x="400" y="84">読み取り</text>
+          <path class="flow flow-key" d="M149 83H169"/>
+          <path class="flow flow-key" d="M309 83H329"/>
+          <text class="key-text" x="240" y="139">修正が連鎖</text>
+          <text class="detail-text" x="240" y="175">役割を分けると、必要な所だけ</text>
+          <rect class="node node-key" x="15" y="201" width="130" height="50" rx="7"/>
+          <rect class="node" x="175" y="201" width="130" height="50" rx="7"/>
+          <rect class="node" x="335" y="201" width="130" height="50" rx="7"/>
+          <text class="key-text" x="80" y="227">機器</text><text x="240" y="227">判断</text><text x="400" y="227">読み取り</text>
+          <path class="flow" d="M149 226H169"/>
+          <path class="flow" d="M309 226H329"/>
+          <text class="detail-text" x="240" y="267">そのまま</text><text class="detail-text" x="400" y="267">そのまま</text>
+        </svg>
+        <figcaption>メリット：修正が小さい・既存動作を守りやすい・テストしやすい。</figcaption>
+      </figure>
+      <div class="goal">
+        <h3>この資料で伝えたいこと</h3>
+        <p><strong>「変更したい所だけを変えられる設計」を選ぶ。</strong></p>
+      </div>
+    </section>
+
+    <section class="slide" id="slide-3" data-page="3" data-title="題材：スイッチに合わせて電球を点ける" data-source-ref="main" data-source-commit="042f603a29b8cca6313c582d326b7eecf229386a" aria-labelledby="title-3" tabindex="-1">
+      <header>
+        <p class="eyebrow">03 / まず、何をするコードか</p>
+        <h2 id="title-3">スイッチに合わせて、電球を点ける。</h2>
+        <p class="lead">スイッチの状態に、電球の明かりを合わせます。</p>
+      </header>
+      <div class="columns">
+        <figure class="diagram" data-diagram="switch-bulb-flow">
+          <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-3-title" aria-describedby="diagram-3-desc">
+            <title id="diagram-3-title">スイッチの状態で電球の点灯と消灯を選ぶ</title>
+            <desc id="diagram-3-desc">S9000はスイッチ。isOnで状態を判断し、オンならB9000という電球を点け、オフなら消す。</desc>
+            <rect class="node" x="14" y="80" width="140" height="120" rx="8"/>
+            <use class="diagram-icon" href="#diagram-switch" x="48" y="90" width="72" height="54"/>
+            <text x="84" y="162">S9000</text><text class="detail-text" x="84" y="187">スイッチ</text>
+            <rect class="node" x="180" y="100" width="120" height="80" rx="8"/>
+            <text x="240" y="125">判断</text><text class="code-text" x="240" y="155">isOn()</text>
+            <path class="flow" d="M158 140H175"/>
+            <path class="flow" d="M304 140H320V70H335"/>
+            <path class="flow" d="M320 140V210H335"/>
+            <text class="detail-text" x="315" y="40">ON</text><text class="detail-text" x="315" y="244">OFF</text>
+            <rect class="node" x="340" y="15" width="125" height="112" rx="8"/>
+            <use class="diagram-icon" href="#diagram-bulb" x="381" y="22" width="43" height="52"/>
+            <text class="code-text" x="403" y="88">B9000</text><text class="key-text detail-text" x="403" y="111">点灯</text>
+            <rect class="node" x="340" y="155" width="125" height="112" rx="8"/>
+            <use class="diagram-icon" href="#diagram-bulb" x="381" y="162" width="43" height="52"/>
+            <text class="code-text" x="403" y="228">B9000</text><text class="detail-text" x="403" y="251">消灯</text>
+          </svg>
+          <figcaption>教材では機器操作は表示、スイッチはON固定です。</figcaption>
+        </figure>
+        <div class="code-card">
+          <div class="code-title"><span>main＝プログラムの入口</span><span>Kotlin</span></div>
+          <pre tabindex="0" data-source-path="src/main/kotlin/pair/SmartHomeApp.kt"><code><span class="kw">fun</span> main() {
+    <span class="kw">val</span> bulb = B9000()
+    <span class="kw">val</span> switch = S9000()
+    <span class="kw">while</span> (true) {
+        <span class="kw">if</span> (switch.isOn()) {
+            bulb.turnOn()
+        } <span class="kw">else</span> {
+            bulb.turnOff()
+        }
+    }
+}</code></pre>
+        </div>
+      </div>
+      <footer class="slide-footer">
+        <p class="source">コード出典：<a title="main / src/main/kotlin/pair/SmartHomeApp.kt" href="https://github.com/dig-workshop/XPPPP_10th/blob/042f603a29b8cca6313c582d326b7eecf229386a/src/main/kotlin/pair/SmartHomeApp.kt">mainの実装</a></p>
+      </footer>
+    </section>
+
+    <section class="slide principle-d" id="slide-4" data-page="4" data-title="D：依存関係逆転の原則" data-principle="D" data-kind="principle" data-source-ref="answer/dependencyInversionPrinciple" data-source-commit="27218b25b470edc91a159ad5e14148dfacbfa052" aria-labelledby="title-4" tabindex="-1">
+      <header>
+        <p class="eyebrow">04 / D · 依存関係逆転の原則</p>
+        <h2 id="title-4">機種名ではなく、必要な操作でつなぐ。</h2>
+        <p class="lead">制御役と機器の間に、共通の操作の約束を置きます。</p>
+      </header>
+      <div class="one-line"><span>一言で表すなら</span><strong>特定の製品ではなく、できることを頼りにする。</strong></div>
+      <div class="columns">
+        <figure class="diagram" data-diagram="dependency-toward-roles">
+          <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-4-title" aria-describedby="diagram-4-desc">
+            <title id="diagram-4-title">制御役と機器が共通の操作の約束に合わせる</title>
+            <desc id="diagram-4-desc">左のSmartHomeAppは制御役。中央のBulbは電源操作、Switchは状態確認の約束。右の電球B9000とスイッチS9000も、それぞれ同じ約束に合わせる。</desc>
+            <rect class="node" x="8" y="60" width="145" height="155" rx="8"/>
+            <use class="diagram-icon" href="#diagram-code" x="56" y="77" width="48" height="48"/>
+            <text class="code-text" x="80" y="150">SmartHomeApp</text><text class="detail-text" x="80" y="183">制御役</text>
+            <rect class="node node-key" x="200" y="30" width="120" height="90" rx="8"/>
+            <text x="260" y="60">Bulb</text><text class="detail-text" x="260" y="92">電源操作</text>
+            <rect class="node node-key" x="200" y="170" width="120" height="90" rx="8"/>
+            <text x="260" y="200">Switch</text><text class="detail-text" x="260" y="232">状態確認</text>
+            <rect class="node" x="367" y="30" width="105" height="90" rx="8"/>
+            <text x="420" y="60">B9000</text><text class="detail-text" x="420" y="92">電球</text>
+            <rect class="node" x="367" y="170" width="105" height="90" rx="8"/>
+            <text x="420" y="200">S9000</text><text class="detail-text" x="420" y="232">スイッチ</text>
+            <path class="flow" d="M157 100H176V75H192"/>
+            <path class="flow" d="M157 180H176V215H192"/>
+            <path class="flow" d="M363 75H328"/>
+            <path class="flow" d="M363 215H328"/>
+          </svg>
+          <figcaption>矢印は「共通の操作に合わせる」向きです。</figcaption>
+        </figure>
+        <div class="code-card">
+          <div class="code-title"><span>interface＝操作の約束</span><span>Kotlin</span></div>
+          <pre tabindex="0" data-source-path="src/main/kotlin/pair/SmartHomeApp.kt"><code><span class="kw">interface</span> <span class="type">Bulb</span> {
+    <span class="kw">fun</span> turnOn()
+    <span class="kw">fun</span> turnOff()
+}
+
+<span class="kw">interface</span> <span class="type">Switch</span> {
+    <span class="kw">fun</span> isOn(): Boolean
+}</code></pre>
+        </div>
+      </div>
+      <footer class="slide-footer">
+        <p class="source">コード出典：<a title="answer/dependencyInversionPrinciple / SmartHomeApp.kt" href="https://github.com/dig-workshop/XPPPP_10th/blob/27218b25b470edc91a159ad5e14148dfacbfa052/src/main/kotlin/pair/SmartHomeApp.kt">Dの解答ブランチ</a></p>
+      </footer>
+    </section>
+
+    <section class="slide principle-d" id="slide-5" data-page="5" data-title="Dの具体例：実際の電球は外で選ぶ" data-principle="D" data-kind="example" data-source-ref="answer/dependencyInversionPrinciple" data-source-commit="27218b25b470edc91a159ad5e14148dfacbfa052" aria-labelledby="title-5" tabindex="-1">
+      <header>
+        <p class="eyebrow">05 / D · 実際の製品とのつなぎ方</p>
+        <h2 id="title-5">実際の電球は、制御の外で選ぶ。</h2>
+        <p class="lead">入口mainで製品を選び、制御役へ渡します。</p>
+      </header>
+      <div class="columns">
+        <figure class="diagram" data-diagram="compose-devices">
+          <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-5-title" aria-describedby="diagram-5-desc">
+            <title id="diagram-5-title">入口で電球とスイッチを選んで制御役へ渡す</title>
+            <desc id="diagram-5-desc">mainでB9000という電球とS9000というスイッチを作り、制御役のSmartHomeAppへ渡す。runOnceは状態を読んで一回指示する処理。</desc>
+            <rect class="node" x="18" y="25" width="150" height="95" rx="8"/>
+            <use class="diagram-icon" href="#diagram-bulb" x="32" y="36" width="42" height="55"/>
+            <text x="113" y="58">B9000</text><text class="detail-text" x="113" y="91">電球</text>
+            <rect class="node" x="18" y="160" width="150" height="95" rx="8"/>
+            <use class="diagram-icon" href="#diagram-switch" x="30" y="180" width="54" height="42"/>
+            <text x="113" y="188">S9000</text><text class="detail-text" x="113" y="221">スイッチ</text>
+            <rect class="node node-key" x="285" y="75" width="177" height="130" rx="8"/>
+            <text class="code-text" x="374" y="112">SmartHomeApp</text>
+            <text class="detail-text" x="374" y="145">状態を見て指示</text><text class="code-text" x="374" y="180">runOnce()</text>
+            <path class="flow" d="M172 75H245V110H277"/>
+            <path class="flow" d="M172 207H245V170H277"/>
+            <text class="detail-text" x="232" y="48">mainで選ぶ</text><text class="detail-text" x="232" y="240">渡す</text>
+          </svg>
+          <figcaption>runOnce＝状態を読んで、1回指示する処理。</figcaption>
+        </figure>
+        <div>
+          <div class="code-card">
+            <div class="code-title"><span>入口のmainで、使う製品を選んで渡す</span><span>Kotlin</span></div>
+            <pre tabindex="0" data-source-path="src/main/kotlin/pair/SmartHomeApp.kt"><code><span class="kw">fun</span> main() {
+    <span class="kw">val</span> app = SmartHomeApp(B9000(), S9000())
+    <span class="kw">while</span> (true) {
+        app.runOnce()
+    }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-footer">
+        <p class="takeaway"><strong>選ぶ場所と、判断する場所を分ける。</strong></p>
+        <p class="source">コード出典：<a title="answer/dependencyInversionPrinciple / SmartHomeApp.kt" href="https://github.com/dig-workshop/XPPPP_10th/blob/27218b25b470edc91a159ad5e14148dfacbfa052/src/main/kotlin/pair/SmartHomeApp.kt">Dの解答ブランチ</a></p>
+      </footer>
+    </section>
+
+    <section class="slide principle-s" id="slide-6" data-page="6" data-title="S：単一責任の原則" data-principle="S" data-kind="principle" data-source-ref="answer/SingleResponsibilityPrinciple" data-source-commit="a9fa65fd6d9dfdae522768ff03193552639722b8" aria-labelledby="title-6" tabindex="-1">
+      <header>
+        <p class="eyebrow">06 / S · 単一責任の原則</p>
+        <h2 id="title-6">電源の操作と、指示を出す判断を分ける。</h2>
+        <p class="lead">読む・判断する・操作する。変わる理由で分けます。</p>
+      </header>
+      <div class="one-line"><span>一言で表すなら</span><strong>違う理由で変わる処理を、別々に持つ。</strong></div>
+      <div class="columns">
+        <figure class="diagram" data-diagram="separate-change-reasons">
+          <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-6-title" aria-describedby="diagram-6-desc">
+            <title id="diagram-6-title">読む・判断する・操作するを変更理由で分ける</title>
+            <desc id="diagram-6-desc">S9000はスイッチを読む、runは指示を判断する、B9000は電球を操作する。取得方法、判断条件、機器の仕様は異なる変更理由。</desc>
+            <text class="detail-text" x="240" y="30">変わる理由が違う</text>
+            <rect class="node" x="15" y="70" width="130" height="120" rx="8"/>
+            <rect class="node node-key" x="175" y="70" width="130" height="120" rx="8"/>
+            <rect class="node" x="335" y="70" width="130" height="120" rx="8"/>
+            <text x="80" y="105">S9000</text><text x="240" y="105">run</text><text x="400" y="105">B9000</text>
+            <text class="detail-text" x="80" y="150">読む</text><text class="detail-text" x="240" y="150">判断する</text><text class="detail-text" x="400" y="150">操作する</text>
+            <path class="flow" d="M149 130H169"/>
+            <path class="flow" d="M309 130H329"/>
+            <text class="detail-text" x="80" y="229">取得方法</text><text class="detail-text" x="240" y="229">判断条件</text><text class="detail-text" x="400" y="229">機器の仕様</text>
+          </svg>
+          <figcaption>OnOffThing＝オン・オフできる機器。Switch＝スイッチ。</figcaption>
+        </figure>
+        <div class="code-card">
+          <div class="code-title"><span>runは判断だけを担当する</span><span>Kotlin</span></div>
+          <pre tabindex="0" data-source-path="src/main/kotlin/pair/SmartHomeApp.kt"><code><span class="kw">fun</span> run(thing: OnOffThing, switch: Switch) {
+    <span class="kw">if</span> (switch.isOn()) {
+        thing.turnOn()
+    } <span class="kw">else</span> {
+        thing.turnOff()
+    }
+}</code></pre>
+        </div>
+      </div>
+      <footer class="slide-footer">
+        <p class="source">コード出典：<a title="answer/SingleResponsibilityPrinciple / SmartHomeApp.kt" href="https://github.com/dig-workshop/XPPPP_10th/blob/a9fa65fd6d9dfdae522768ff03193552639722b8/src/main/kotlin/pair/SmartHomeApp.kt">Sの解答ブランチ</a></p>
+      </footer>
+    </section>
+
+    <section class="slide principle-s" id="slide-7" data-page="7" data-title="Sの具体例：スイッチを読む方法だけを変える" data-principle="S" data-kind="example" data-source-ref="answer/SingleResponsibilityPrinciple" data-source-commit="a9fa65fd6d9dfdae522768ff03193552639722b8" aria-labelledby="title-7" tabindex="-1">
+      <header>
+        <p class="eyebrow">07 / S · 変更する理由を見分ける</p>
+        <h2 id="title-7">スイッチの変更は、スイッチ側に閉じ込める。</h2>
+        <p class="lead">読む方法の変更なら、判断や電球の操作は変えません。</p>
+      </header>
+      <div class="columns">
+        <figure class="diagram" data-diagram="localize-switch-change">
+          <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-7-title" aria-describedby="diagram-7-desc">
+            <title id="diagram-7-title">読み取り方法の変更はスイッチ側だけに閉じ込める</title>
+            <desc id="diagram-7-desc">S9000の読む方法だけを変更する。runのオン・オフの判断と、B9000の電源操作は変更しない。</desc>
+            <rect class="node node-key" x="15" y="70" width="130" height="120" rx="8"/>
+            <rect class="node" x="175" y="70" width="130" height="120" rx="8"/>
+            <rect class="node" x="335" y="70" width="130" height="120" rx="8"/>
+            <text x="80" y="105">S9000</text><text x="240" y="105">run</text><text x="400" y="105">B9000</text>
+            <text class="detail-text" x="80" y="150">読む方法</text><text class="detail-text" x="240" y="150">判断</text><text class="detail-text" x="400" y="150">電源操作</text>
+            <path class="flow" d="M149 130H169"/>
+            <path class="flow" d="M309 130H329"/>
+            <text class="key-text detail-text" x="80" y="229">ここだけ変更</text>
+            <text class="detail-text" x="240" y="229">そのまま</text><text class="detail-text" x="400" y="229">そのまま</text>
+          </svg>
+          <figcaption>Switch＝状態を読む約束。教材ではtrue（ON）固定。</figcaption>
+        </figure>
+        <div class="code-card">
+          <div class="code-title"><span>S9000＝スイッチの読み取り役</span><span>Kotlin</span></div>
+          <pre tabindex="0" data-source-path="src/main/kotlin/pair/SmartHomeApp.kt"><code><span class="kw">class</span> <span class="type">S9000</span>: Switch {
+    <span class="kw">override fun</span> isOn(): Boolean {
+        <span class="kw">return</span> true
+    }
+}</code></pre>
+        </div>
+      </div>
+      <footer class="slide-footer">
+        <p class="takeaway"><strong>異なる変更理由を、一つの処理に混ぜない。</strong></p>
+        <p class="source">コード出典：<a title="answer/SingleResponsibilityPrinciple / SmartHomeApp.kt" href="https://github.com/dig-workshop/XPPPP_10th/blob/a9fa65fd6d9dfdae522768ff03193552639722b8/src/main/kotlin/pair/SmartHomeApp.kt">Sの解答ブランチ</a></p>
+      </footer>
+    </section>
+
+    <section class="slide principle-o" id="slide-8" data-page="8" data-title="O：開放閉鎖の原則" data-principle="O" data-kind="principle" data-source-ref="answer/OpenClosedPrinciple" data-source-commit="930efe5fdba0dbbdad120069aefd4b6bbcef1569" aria-labelledby="title-8" tabindex="-1">
+      <header>
+        <p class="eyebrow">08 / O · 開放閉鎖の原則</p>
+        <h2 id="title-8">テレビを増やしても、制御の判断は変えない。</h2>
+        <p class="lead">追加するのは機器。共通のオン・オフ判断は残します。</p>
+      </header>
+      <div class="one-line"><span>一言で表すなら</span><strong>新しい機能は追加し、安定した処理は書き換えない。</strong></div>
+      <div class="columns">
+        <figure class="diagram" data-diagram="extend-devices-keep-control">
+          <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-8-title" aria-describedby="diagram-8-desc">
+            <title id="diagram-8-title">電球と追加するテレビが同じ電源操作につながる</title>
+            <desc id="diagram-8-desc">既存のB9000と追加するTV9000は、どちらもOnOffThingという電源操作の型に合わせる。その型を使うrunの判断は変更しない。</desc>
+            <rect class="node" x="15" y="25" width="130" height="90" rx="8"/>
+            <use class="diagram-icon" href="#diagram-bulb" x="28" y="41" width="38" height="49"/>
+            <text class="code-text" x="102" y="55">B9000</text><text class="detail-text" x="102" y="87">電球</text>
+            <rect class="node node-key" x="15" y="165" width="130" height="90" rx="8"/>
+            <use class="diagram-icon" href="#diagram-tv" x="25" y="185" width="43" height="40"/>
+            <text class="code-text" x="102" y="195">TV9000</text><text class="detail-text" x="102" y="232">追加</text>
+            <rect class="node" x="195" y="85" width="130" height="115" rx="8"/>
+            <text class="code-text" x="260" y="115">OnOffThing</text><text class="detail-text" x="260" y="148">電源操作</text><text class="detail-text" x="260" y="178">共通の型</text>
+            <rect class="node" x="375" y="100" width="90" height="85" rx="8"/>
+            <text x="420" y="127">run</text><text class="detail-text" x="420" y="160">判断</text>
+            <path class="flow" d="M149 70H170V120H187"/>
+            <path class="flow" d="M149 210H170V170H187"/>
+            <path class="flow" d="M329 142H367"/>
+            <text class="key-text detail-text" x="420" y="225">そのまま</text>
+          </svg>
+          <figcaption>Switchは、状態を読むスイッチの型です。</figcaption>
+        </figure>
+        <div>
+          <div class="code-card">
+            <div class="code-title"><span>run＝機器が増えても変えない判断</span><span>Kotlin</span></div>
+            <pre tabindex="0" data-source-path="src/main/kotlin/pair/SmartHomeApp.kt"><code><span class="kw">fun</span> run(thing: OnOffThing, switch: Switch) {
+    <span class="kw">if</span> (switch.isOn()) {
+        thing.turnOn()
+    } <span class="kw">else</span> {
+        thing.turnOff()
+    }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-footer">
+        <p class="source">コード出典：<a title="answer/OpenClosedPrinciple / SmartHomeApp.kt" href="https://github.com/dig-workshop/XPPPP_10th/blob/930efe5fdba0dbbdad120069aefd4b6bbcef1569/src/main/kotlin/pair/SmartHomeApp.kt">Oの解答ブランチ</a></p>
+      </footer>
+    </section>
+
+    <section class="slide principle-o" id="slide-9" data-page="9" data-title="Oの具体例：テレビの実装を追加する" data-principle="O" data-kind="example" data-source-ref="answer/OpenClosedPrinciple" data-source-commit="930efe5fdba0dbbdad120069aefd4b6bbcef1569" aria-labelledby="title-9" tabindex="-1">
+      <header>
+        <p class="eyebrow">09 / O · 増やす部分と、変えない部分</p>
+        <h2 id="title-9">テレビにも、同じオン・オフ操作を用意する。</h2>
+        <p class="lead">テレビ用の操作を追加し、既存のrunから使います。</p>
+      </header>
+      <div class="columns">
+        <figure class="diagram" data-diagram="add-tv-without-new-control">
+          <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-9-title" aria-describedby="diagram-9-desc">
+            <title id="diagram-9-title">同じ判断から電球も追加したテレビも操作できる</title>
+            <desc id="diagram-9-desc">runという共通の判断はそのまま。既存の電球B9000に加えて、テレビTV9000を操作できる。追加するのはテレビの電源操作。</desc>
+            <rect class="node" x="15" y="85" width="135" height="110" rx="8"/>
+            <use class="diagram-icon" href="#diagram-code" x="60" y="95" width="45" height="44"/>
+            <text x="83" y="156">run</text><text class="detail-text" x="83" y="181">共通の判断</text>
+            <rect class="node" x="295" y="20" width="170" height="95" rx="8"/>
+            <use class="diagram-icon" href="#diagram-bulb" x="309" y="35" width="42" height="52"/>
+            <text x="407" y="48">B9000</text><text class="detail-text" x="407" y="81">電球</text>
+            <rect class="node node-key" x="295" y="165" width="170" height="95" rx="8"/>
+            <use class="diagram-icon" href="#diagram-tv" x="305" y="184" width="49" height="44"/>
+            <text x="407" y="194">TV9000</text><text class="detail-text" x="407" y="228">テレビ</text>
+            <path class="flow" d="M154 140H230V68H287"/>
+            <path class="flow" d="M230 140V212H287"/>
+            <text class="key-text" x="350" y="141">追加</text>
+          </svg>
+          <figcaption>OnOffThing＝電源操作の約束。isOn＝テレビの電源状態。</figcaption>
+        </figure>
+        <div class="code-card">
+          <div class="code-title"><span>TV9000＝追加するテレビ</span><span>Kotlin</span></div>
+          <pre tabindex="0" data-source-path="src/main/kotlin/pair/SmartHomeApp.kt"><code><span class="kw">class</span> <span class="type">TV9000</span> : OnOffThing {
+    <span class="kw">var</span> isOn = false
+
+    <span class="kw">override fun</span> turnOn() {
+        isOn = true
+    }
+
+    <span class="kw">override fun</span> turnOff() {
+        isOn = false
+    }
+}</code></pre>
+        </div>
+      </div>
+      <footer class="slide-footer">
+        <p class="takeaway"><strong>増やすのは機器。共通の判断はそのまま。</strong></p>
+        <p class="source">コード出典：<a title="answer/OpenClosedPrinciple / SmartHomeApp.kt" href="https://github.com/dig-workshop/XPPPP_10th/blob/930efe5fdba0dbbdad120069aefd4b6bbcef1569/src/main/kotlin/pair/SmartHomeApp.kt">Oの解答ブランチ</a></p>
+      </footer>
+    </section>
+
+    <section class="slide principle-l" id="slide-10" data-page="10" data-title="L：リスコフの置換原則" data-principle="L" data-kind="principle" data-source-ref="answer/liskovSubstitutionPrinciple" data-source-commit="90b095b14aa0e6c29969b988deea8c5481ca07a0" aria-labelledby="title-10" tabindex="-1">
+      <header>
+        <p class="eyebrow">10 / L · リスコフの置換原則</p>
+        <h2 id="title-10">電球を交換しても、操作の結果をそろえる。</h2>
+        <p class="lead">どの電球でも、点けたらON・消したらOFFです。</p>
+      </header>
+      <div class="one-line"><span>一言で表すなら</span><strong>入れ替えても、使う側との約束を守る。</strong></div>
+      <div class="columns">
+        <figure class="diagram" data-diagram="power-state-contract">
+          <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-10-title" aria-describedby="diagram-10-desc">
+            <title id="diagram-10-title">点けるとオン、消すとオフになる電球の約束</title>
+            <desc id="diagram-10-desc">turnOnでisOnがfalseからtrueへ、turnOffでtrueからfalseへ変わる。同じ操作を繰り返してもよい。</desc>
+            <circle class="node" cx="105" cy="140" r="68"/>
+            <circle class="node node-key" cx="375" cy="140" r="68"/>
+            <text x="105" y="125">OFF</text><text class="code-text" x="105" y="159">isOn=false</text>
+            <text class="key-text" x="375" y="125">ON</text><text class="code-text" x="375" y="159">isOn=true</text>
+            <path class="flow" d="M180 116H300"/>
+            <path class="flow" d="M300 166H180"/>
+            <text class="code-text" x="240" y="90">turnOn()</text><text class="code-text" x="240" y="194">turnOff()</text>
+            <path class="flow" d="M62 189C5 225 5 55 62 91"/>
+            <path class="flow" d="M418 91C475 55 475 225 418 189"/>
+            <text class="detail-text" x="240" y="249">同じ操作の繰り返しもOK</text>
+          </svg>
+          <figcaption>isOnは電球の電源状態。trueがON、falseがOFFです。</figcaption>
+        </figure>
+        <div class="code-card">
+          <div class="code-title"><span>Bulb＝電球の型</span><span>Kotlin</span></div>
+          <pre tabindex="0" data-source-path="src/main/kotlin/pair/SmartHomeApp.kt"><code><span class="kw">interface</span> <span class="type">Bulb</span> {
+    <span class="kw">val</span> isOn: Boolean
+    <span class="kw">fun</span> turnOn()
+    <span class="kw">fun</span> turnOff()
+}</code></pre>
+        </div>
+      </div>
+      <footer class="slide-footer">
+        <p class="source">コードと動作の約束の出典：<a title="answer/liskovSubstitutionPrinciple / SmartHomeApp.kt" href="https://github.com/dig-workshop/XPPPP_10th/blob/90b095b14aa0e6c29969b988deea8c5481ca07a0/src/main/kotlin/pair/SmartHomeApp.kt">Lの解答ブランチ</a></p>
+      </footer>
+    </section>
+
+    <section class="slide principle-l" id="slide-11" data-page="11" data-title="Lの具体例：LED電球でも同じ確認が通る" data-principle="L" data-kind="example" data-source-ref="answer/liskovSubstitutionPrinciple" data-source-commit="90b095b14aa0e6c29969b988deea8c5481ca07a0" aria-labelledby="title-11" tabindex="-1">
+      <header>
+        <p class="eyebrow">11 / L · 交換後も同じ結果になるか確かめる</p>
+        <h2 id="title-11">LED電球でも、同じ確認が通る。</h2>
+        <p class="lead">同じON指示なら、電球を替えても点灯します。</p>
+      </header>
+      <div class="columns">
+        <figure class="diagram" data-diagram="same-command-same-result">
+          <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-11-title" aria-describedby="diagram-11-desc">
+            <title id="diagram-11-title">電球を替えても同じオン指示で点灯する</title>
+            <desc id="diagram-11-desc">オン固定のonSwitchを使い、runでB9000とLED電球LedBulbを操作する。どちらもBulbという電球の型で扱え、結果はisOnがtrueになる。</desc>
+            <rect class="node" x="12" y="85" width="130" height="110" rx="8"/>
+            <use class="diagram-icon" href="#diagram-switch" x="48" y="98" width="58" height="43"/>
+            <text class="code-text" x="77" y="161">onSwitch</text><text class="detail-text" x="77" y="184">ON固定</text>
+            <rect class="node" x="190" y="25" width="130" height="85" rx="8"/>
+            <text x="255" y="52">B9000</text><text class="detail-text" x="255" y="86">電球（Bulb）</text>
+            <rect class="node" x="190" y="170" width="130" height="85" rx="8"/>
+            <text x="255" y="197">LedBulb</text><text class="detail-text" x="255" y="231">電球（Bulb）</text>
+            <rect class="node node-key" x="350" y="82" width="120" height="116" rx="8"/>
+            <text class="key-text" x="410" y="120">点灯</text><text class="code-text" x="410" y="161">isOn=true</text>
+            <path class="flow" d="M146 140H164V68H182"/>
+            <path class="flow" d="M164 140V213H182"/>
+            <path class="flow" d="M324 68H335V110H342"/>
+            <path class="flow" d="M324 213H335V170H342"/>
+            <text class="code-text" x="164" y="27">run</text>
+          </svg>
+          <figcaption>run＝スイッチに合わせた操作。最終行は点灯の確認。</figcaption>
+        </figure>
+        <div class="code-card">
+          <div class="code-title"><span>LedBulb＝LED電球のテスト</span><span>Kotlin</span></div>
+          <pre tabindex="0" data-source-path="src/test/kotlin/SmartHomeAppTests.kt"><code>    @Test
+    <span class="kw">fun</span> `LedBulbはスイッチがオンなら点灯する`() {
+        <span class="kw">val</span> bulb: Bulb = LedBulb()
+
+        run(bulb, onSwitch)
+
+        assertEquals(true, bulb.isOn)
+    }</code></pre>
+        </div>
+      </div>
+      <footer class="slide-footer">
+        <p class="takeaway"><strong>差し替え先でも、操作の結果を守る。</strong></p>
+        <p class="source">コード出典：<a title="answer/liskovSubstitutionPrinciple / SmartHomeAppTests.kt" href="https://github.com/dig-workshop/XPPPP_10th/blob/90b095b14aa0e6c29969b988deea8c5481ca07a0/src/test/kotlin/SmartHomeAppTests.kt">Lの解答ブランチのテスト</a></p>
+      </footer>
+    </section>
+
+    <section class="slide principle-i" id="slide-12" data-page="12" data-title="I：インターフェース分離の原則" data-principle="I" data-kind="principle" data-source-ref="origin/answer/interfaceSegregationPrinciple" data-source-commit="49be9a1304b4306349ae1daee5ca3d23d97326ff" aria-labelledby="title-12" tabindex="-1">
+      <header>
+        <p class="eyebrow">12 / I · インターフェース分離の原則</p>
+        <h2 id="title-12">電球の操作と、スイッチの操作を分ける。</h2>
+        <p class="lead">電源操作と状態確認を、別々の約束にします。</p>
+      </header>
+      <div class="one-line"><span>一言で表すなら</span><strong>使わない操作への依存を、押し付けない。</strong></div>
+      <div class="columns">
+        <figure class="diagram" data-diagram="only-needed-operations">
+          <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-12-title" aria-describedby="diagram-12-desc">
+            <title id="diagram-12-title">使う側に必要な操作だけを別々にまとめる</title>
+            <desc id="diagram-12-desc">電球を使う側はBulbの点ける・消す操作だけを使う。スイッチを使う側はSwitchの状態確認だけを使う。</desc>
+            <rect class="node" x="15" y="20" width="190" height="105" rx="8"/>
+            <text x="110" y="55">電球を使う側</text><text class="detail-text" x="110" y="94">点ける・消す</text>
+            <rect class="node node-key" x="280" y="20" width="185" height="105" rx="8"/>
+            <text x="372" y="45">Bulb</text><text class="code-text" x="372" y="80">turnOn()</text><text class="code-text" x="372" y="106">turnOff()</text>
+            <rect class="node" x="15" y="155" width="190" height="105" rx="8"/>
+            <text x="110" y="190">スイッチを使う側</text><text class="detail-text" x="110" y="229">状態を読む</text>
+            <rect class="node node-key" x="280" y="155" width="185" height="105" rx="8"/>
+            <text x="372" y="187">Switch</text><text class="code-text" x="372" y="225">isOn()</text>
+            <path class="flow" d="M209 73H272"/>
+            <path class="flow" d="M209 207H272"/>
+          </svg>
+          <figcaption>インターフェース＝使う側に必要な操作の約束。</figcaption>
+        </figure>
+        <div class="code-card">
+          <div class="code-title"><span>電球とスイッチを分けた型</span><span>Kotlin</span></div>
+          <pre tabindex="0" data-source-path="src/main/kotlin/pair/SmartHomeApp.kt"><code><span class="kw">interface</span> <span class="type">Bulb</span> {
+    <span class="kw">fun</span> turnOn()
+    <span class="kw">fun</span> turnOff()
+}
+
+<span class="kw">interface</span> <span class="type">Switch</span> {
+    <span class="kw">fun</span> isOn(): Boolean
+}</code></pre>
+        </div>
+      </div>
+      <footer class="slide-footer">
+        <p class="source">コード出典：<a title="answer/interfaceSegregationPrinciple / SmartHomeApp.kt" href="https://github.com/dig-workshop/XPPPP_10th/blob/49be9a1304b4306349ae1daee5ca3d23d97326ff/src/main/kotlin/pair/SmartHomeApp.kt">Iの解答ブランチ</a></p>
+      </footer>
+    </section>
+
+    <section class="slide principle-i" id="slide-13" data-page="13" data-title="Iの具体例：それぞれに必要な操作だけを用意" data-principle="I" data-kind="example" data-source-ref="origin/answer/interfaceSegregationPrinciple" data-source-commit="49be9a1304b4306349ae1daee5ca3d23d97326ff" aria-labelledby="title-13" tabindex="-1">
+      <header>
+        <p class="eyebrow">13 / I · 機器にも不要な操作を持たせない</p>
+        <h2 id="title-13">それぞれの機器は、必要な操作だけを用意する。</h2>
+        <p class="lead">電球は電源操作だけ。スイッチは状態確認だけ。</p>
+      </header>
+      <div class="columns">
+        <figure class="diagram" data-diagram="separate-device-capabilities">
+          <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-13-title" aria-describedby="diagram-13-desc">
+            <title id="diagram-13-title">各機器は自分に必要な操作だけを実装する</title>
+            <desc id="diagram-13-desc">電球B9000はBulbのturnOnとturnOffを用意する。スイッチS9000はSwitchのisOnだけを用意し、不要な電源操作を持たない。</desc>
+            <rect class="node" x="15" y="15" width="170" height="115" rx="8"/>
+            <use class="diagram-icon" href="#diagram-bulb" x="27" y="40" width="42" height="54"/>
+            <text x="120" y="50">B9000</text><text class="detail-text" x="120" y="87">電球</text>
+            <rect class="node node-key" x="280" y="15" width="185" height="115" rx="8"/>
+            <text x="372" y="44">Bulb</text><text class="code-text" x="372" y="80">turnOn()</text><text class="code-text" x="372" y="108">turnOff()</text>
+            <rect class="node" x="15" y="160" width="170" height="100" rx="8"/>
+            <use class="diagram-icon" href="#diagram-switch" x="27" y="183" width="54" height="42"/>
+            <text x="123" y="190">S9000</text><text class="detail-text" x="123" y="227">スイッチ</text>
+            <rect class="node node-key" x="280" y="160" width="185" height="100" rx="8"/>
+            <text x="372" y="192">Switch</text><text class="code-text" x="372" y="231">isOn()</text>
+            <path class="flow" d="M189 72H272"/>
+            <path class="flow" d="M189 210H272"/>
+          </svg>
+          <figcaption>それぞれの約束だけを実装。操作は教材用の表示です。</figcaption>
+        </figure>
+        <div class="code-card">
+          <div class="code-title"><span>B9000＝電源操作だけを持つ電球</span><span>Kotlin</span></div>
+          <pre tabindex="0" data-source-path="src/main/kotlin/pair/SmartHomeApp.kt"><code><span class="kw">class</span> <span class="type">B9000</span> : Bulb {
+    <span class="kw">override fun</span> turnOn() {
+        println(<span class="str">"turnOn"</span>)
+    }
+
+    <span class="kw">override fun</span> turnOff() {
+        println(<span class="str">"turnOff"</span>)
+    }
+}</code></pre>
+        </div>
+      </div>
+      <footer class="slide-footer">
+        <p class="takeaway"><strong>使わない操作を、持ち込まない。</strong></p>
+        <p class="source">コード出典：<a title="answer/interfaceSegregationPrinciple / SmartHomeApp.kt" href="https://github.com/dig-workshop/XPPPP_10th/blob/49be9a1304b4306349ae1daee5ca3d23d97326ff/src/main/kotlin/pair/SmartHomeApp.kt">Iの解答ブランチ</a></p>
+      </footer>
+    </section>
+
+    <section class="slide with-corner-note with-branch-list" id="slide-14" data-page="14" data-title="まとめ：変更する場所を小さくする五つの観点" aria-labelledby="title-14" tabindex="-1">
+      <header>
+        <p class="eyebrow">14 / 五つの原則を、変更したいことに結びつける</p>
+        <h2 id="title-14">変更する場所を、小さくする。</h2>
+        <p class="lead">五つの観点で、変更する場所を確かめます。</p>
+      </header>
+      <figure class="diagram full" data-diagram="five-principles-one-goal">
+        <svg viewBox="0 0 480 320" role="img" aria-labelledby="diagram-14-title" aria-describedby="diagram-14-desc">
+          <title id="diagram-14-title">五つの原則が変更する場所を小さくする目的につながる</title>
+          <desc id="diagram-14-desc">Dは操作でつなぐ、Sは変更理由で分ける、Oは追加で広げる、Lは結果を守る、Iは必要分に絞る。すべて、直したい場所だけを変えるための観点。</desc>
+          <rect class="node" x="150" y="5" width="180" height="80" rx="8"/>
+          <text class="letter" x="240" y="29">D</text><text class="detail-text" x="240" y="63">操作でつなぐ</text>
+          <rect class="node" x="5" y="90" width="125" height="80" rx="8"/>
+          <text class="letter" x="67" y="113">S</text><text class="detail-text" x="67" y="148">理由で分ける</text>
+          <rect class="node" x="350" y="90" width="125" height="80" rx="8"/>
+          <text class="letter" x="412" y="113">O</text><text class="detail-text" x="412" y="148">追加で広げる</text>
+          <rect class="node node-key" x="155" y="125" width="170" height="70" rx="8"/>
+          <text class="key-text" x="240" y="148">直す所だけ</text><text class="key-text" x="240" y="178">変える</text>
+          <rect class="node" x="50" y="235" width="170" height="75" rx="8"/>
+          <text class="letter" x="135" y="258">L</text><text class="detail-text" x="135" y="291">結果を守る</text>
+          <rect class="node" x="260" y="235" width="170" height="75" rx="8"/>
+          <text class="letter" x="345" y="258">I</text><text class="detail-text" x="345" y="291">必要分に絞る</text>
+          <path class="flow" d="M240 89V117"/>
+          <path class="flow" d="M134 145H147"/>
+          <path class="flow" d="M346 145H333"/>
+          <path class="flow" d="M135 231V214H200V203"/>
+          <path class="flow" d="M345 231V214H280V203"/>
+        </svg>
+        <figcaption>原則の暗記より、「変更の影響がどこまで広がるか」を見る。</figcaption>
+      </figure>
+      <aside class="slide-corner-note branch-guide" aria-label="原則名と解答ブランチの一覧">
+        <table class="branch-reference">
+          <caption>原則名と解答ブランチ（DSOLI順）</caption>
+          <tbody>
+            <tr><th scope="row">D：依存関係逆転の原則</th><td><a href="https://github.com/dig-workshop/XPPPP_10th/tree/answer/dependencyInversionPrinciple">answer/dependencyInversionPrinciple</a></td></tr>
+            <tr><th scope="row">S：単一責任の原則</th><td><a href="https://github.com/dig-workshop/XPPPP_10th/tree/answer/SingleResponsibilityPrinciple">answer/SingleResponsibilityPrinciple</a></td></tr>
+            <tr><th scope="row">O：開放閉鎖の原則</th><td><a href="https://github.com/dig-workshop/XPPPP_10th/tree/answer/OpenClosedPrinciple">answer/OpenClosedPrinciple</a></td></tr>
+            <tr><th scope="row">L：リスコフの置換原則</th><td><a href="https://github.com/dig-workshop/XPPPP_10th/tree/answer/liskovSubstitutionPrinciple">answer/liskovSubstitutionPrinciple</a></td></tr>
+            <tr><th scope="row">I：インターフェース分離の原則</th><td><a href="https://github.com/dig-workshop/XPPPP_10th/tree/answer/interfaceSegregationPrinciple">answer/interfaceSegregationPrinciple</a></td></tr>
+          </tbody>
+        </table>
+      </aside>
+    </section>
+
+    <section class="slide" id="slide-15" data-page="15" data-title="SOLIDのデメリット：分けすぎると理解と修正が重くなる" aria-labelledby="title-15" tabindex="-1">
+      <header>
+        <p class="eyebrow">15 / 最後に、適用するための費用も考える</p>
+        <h2 id="title-15">SOLIDにも、設計が重くなるデメリットがある。</h2>
+        <p class="lead">分けすぎると、作る手間も読む負担も増えます。</p>
+      </header>
+      <figure class="diagram full" data-diagram="cost-of-overengineering">
+        <svg viewBox="0 0 480 280" role="img" aria-labelledby="diagram-15-title" aria-describedby="diagram-15-desc">
+          <title id="diagram-15-title">分けすぎによる三つのデメリット</title>
+          <desc id="diagram-15-desc">型やファイルが増える、処理を追う場所が増える、予想が外れると分け方を作り直す。変更を楽にする効果と、分ける負担を比べる。</desc>
+          <use class="diagram-icon" href="#diagram-file" x="17" y="29" width="58" height="73"/>
+          <use class="diagram-icon" href="#diagram-file" x="42" y="51" width="58" height="73"/>
+          <use class="diagram-icon" href="#diagram-file" x="67" y="73" width="58" height="73"/>
+          <text class="key-text letter" x="130" y="44">＋</text>
+          <use class="diagram-icon" href="#diagram-file" x="178" y="30" width="44" height="55"/>
+          <use class="diagram-icon" href="#diagram-file" x="264" y="85" width="44" height="55"/>
+          <use class="diagram-icon" href="#diagram-file" x="178" y="127" width="44" height="55"/>
+          <path class="flow" d="M225 57H286V77"/>
+          <path class="flow" d="M260 112H237V154H226"/>
+          <use class="diagram-icon" href="#diagram-file" x="376" y="47" width="58" height="73"/>
+          <path class="flow flow-key" d="M365 127A58 58 0 1 0 365 45"/>
+          <text x="80" y="202">型が増える</text><text x="240" y="202">追いにくい</text><text x="400" y="202">作り直し</text>
+          <text class="detail-text" x="80" y="239">管理が増える</text><text class="detail-text" x="240" y="239">読む場所が増える</text><text class="detail-text" x="400" y="239">予想が外れる</text>
+        </svg>
+        <figcaption>分けるほど良い、とは限りません。</figcaption>
+      </figure>
+      <div class="goal">
+        <h3>必要な変更を楽にする分だけ使う。</h3>
+        <p><strong>変更が楽になる効果と、分ける負担を比べる。</strong></p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="controls" id="controls" aria-label="スライド操作" hidden>
+    <progress id="progress" max="15" value="1" aria-label="スライドの進行状況"></progress>
+    <div class="controls-inner">
+      <div class="navigation">
+        <button class="button" id="previous" type="button" aria-label="前のスライド">← 前へ</button>
+        <span class="counter" id="counter" aria-hidden="true">01 / 15</span>
+        <button class="button primary" id="next" type="button" aria-label="次のスライド">次へ →</button>
+      </div>
+      <p class="keyboard-hint"><kbd>←</kbd> <kbd>→</kbd> / <kbd>Space</kbd> で移動 · <kbd>Home</kbd> <kbd>End</kbd> で最初・最後へ</p>
+      <div class="tools">
+        <button class="button" id="open-overview" type="button" aria-haspopup="dialog" aria-controls="overview">スライド一覧</button>
+        <button class="button" id="print" type="button">印刷 / PDF</button>
+      </div>
+    </div>
+  </nav>
+  <p class="sr-only" id="status" role="status" aria-live="polite" aria-atomic="true"></p>
+
+  <dialog id="overview" aria-labelledby="overview-title">
+    <div class="dialog-heading">
+      <h2 id="overview-title">スライド一覧</h2>
+      <button class="button" id="close-overview" type="button">閉じる</button>
+    </div>
+    <ol class="outline" id="outline"></ol>
+  </dialog>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const previous = document.getElementById("previous");
+      const next = document.getElementById("next");
+      const counter = document.getElementById("counter");
+      const progress = document.getElementById("progress");
+      const status = document.getElementById("status");
+      const overview = document.getElementById("overview");
+      const outline = document.getElementById("outline");
+      let current = 0;
+
+      const outlineButtons = slides.map((slide, index) => {
+        const item = document.createElement("li");
+        const button = document.createElement("button");
+        const number = document.createElement("span");
+        button.type = "button";
+        number.className = "outline-number";
+        number.textContent = String(index + 1).padStart(2, "0");
+        button.append(number, document.createTextNode(` ${slide.dataset.title}`));
+        button.addEventListener("click", () => {
+          overview.close();
+          showSlide(index);
+          slides[index].focus({ preventScroll: true });
+        });
+        item.append(button);
+        outline.append(item);
+        return button;
+      });
+
+      function showSlide(index, updateHash = true) {
+        if (!Number.isInteger(index) || index < 0 || index >= slides.length) {
+          throw new RangeError(`Invalid slide index: ${index}`);
+        }
+        current = index;
+        slides.forEach((slide, slideIndex) => {
+          slide.hidden = slideIndex !== current;
+          if (slideIndex === current) {
+            outlineButtons[slideIndex].setAttribute("aria-current", "step");
+          } else {
+            outlineButtons[slideIndex].removeAttribute("aria-current");
+          }
+        });
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        counter.textContent = `${String(current + 1).padStart(2, "0")} / ${slides.length}`;
+        progress.max = slides.length;
+        progress.value = current + 1;
+        status.textContent = `${current + 1} / ${slides.length}：${slides[current].dataset.title}`;
+        if (updateHash) {
+          window.history.replaceState(null, "", `#${slides[current].id}`);
+        }
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      }
+
+      function moveSlide(offset) {
+        const index = current + offset;
+        if (index >= 0 && index < slides.length) {
+          showSlide(index);
+        }
+      }
+
+      function showHashSlide() {
+        const hash = window.location.hash;
+        const index = slides.findIndex(slide => `#${slide.id}` === hash);
+        if (index >= 0) {
+          showSlide(index, false);
+        } else {
+          showSlide(0, false);
+          if (hash) {
+            status.textContent = "指定されたスライドが見つからないため、最初のスライドを表示しています。";
+          }
+        }
+      }
+
+      previous.addEventListener("click", () => moveSlide(-1));
+      next.addEventListener("click", () => moveSlide(1));
+      document.getElementById("open-overview").addEventListener("click", () => overview.showModal());
+      document.getElementById("close-overview").addEventListener("click", () => overview.close());
+      document.getElementById("print").addEventListener("click", () => window.print());
+      overview.addEventListener("click", event => {
+        if (event.target === overview) overview.close();
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+        if (overview.open) {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            overview.close();
+          }
+          return;
+        }
+        const target = event.target;
+        if (target instanceof Element && target.closest("input, textarea, select, [contenteditable], pre")) return;
+        if (event.key === " " && target instanceof Element && target.closest("button, a")) return;
+        switch (event.key) {
+          case "ArrowRight":
+          case "PageDown":
+          case " ":
+            event.preventDefault();
+            moveSlide(1);
+            break;
+          case "ArrowLeft":
+          case "PageUp":
+            event.preventDefault();
+            moveSlide(-1);
+            break;
+          case "Home":
+            event.preventDefault();
+            showSlide(0);
+            break;
+          case "End":
+            event.preventDefault();
+            showSlide(slides.length - 1);
+            break;
+        }
+      });
+
+      window.addEventListener("hashchange", showHashSlide);
+      showHashSlide();
+      document.getElementById("controls").hidden = false;
+    })();
+  </script>
+</body>
+</html>
