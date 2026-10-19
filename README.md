@@ -43,6 +43,13 @@ SOLIDはオブジェクト指向設計の5つの基本原則を表します。�
 4. **リファクタリングする** — コードを整理し、設計を改善する（🔵 Refactor）
 5. **1〜4を繰り返す**
 
+### 依存性逆転の原則（DIP）の実装例
+
+[依存性逆転の原則の解説](DEPENDENCY_INVERSION.md) に、今回の設計、TDDの手順、テストの観点、依存性注入（DI）との違いをまとめています。
+
+- [実装](src/main/kotlin/pair/SmartHomeApp.kt)：`Bulb`・`Switch` の抽象に依存する `SmartHomeApp`
+- [テスト](src/test/kotlin/SmartHomeAppTests.kt)：オン・オフ・状態変化をテスト用の機器で検証
+
 ### 💡 チャレンジ問題
 新しい家電を1つ追加してみましょう！（TV、エアコンなど）
 

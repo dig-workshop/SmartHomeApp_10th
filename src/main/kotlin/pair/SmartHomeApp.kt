@@ -1,32 +1,43 @@
 package example
 
-/**
- * Smart Home Example
- */
-class B9000 {
-    fun turnOn() {
-        println("turnOn")
-    }
-    fun turnOff() {
-        println("turnOff")
-    }
+interface Bulb {
+    fun turnOn()
+    fun turnOff()
 }
 
-class S9000 {
-    fun isOn(): Boolean {
-        return true
-    }
+interface Switch {
+    fun isOn(): Boolean
 }
 
-
-fun main() {
-    val bulb = B9000()
-    val switch = S9000()
-    while (true) {
+class SmartHomeApp(private val bulb: Bulb, private val switch: Switch) {
+    fun runOnce() {
         if (switch.isOn()) {
             bulb.turnOn()
         } else {
             bulb.turnOff()
         }
+    }
+}
+
+class B9000 : Bulb {
+    override fun turnOn() {
+        println("turnOn")
+    }
+
+    override fun turnOff() {
+        println("turnOff")
+    }
+}
+
+class S9000 : Switch {
+    override fun isOn(): Boolean {
+        return true
+    }
+}
+
+fun main() {
+    val app = SmartHomeApp(B9000(), S9000())
+    while (true) {
+        app.runOnce()
     }
 }
