@@ -43,6 +43,16 @@ SOLIDはオブジェクト指向設計の5つの基本原則を表します。�
 4. **リファクタリングする** — コードを整理し、設計を改善する（🔵 Refactor）
 5. **1〜4を繰り返す**
 
+### リスコフの置換原則の小さな例
+
+詳しくは[リスコフの置換原則の説明](LISKOV_SUBSTITUTION_PRINCIPLE.md)を参照してください。
+
+[実装](src/main/kotlin/pair/SmartHomeApp.kt)では、`B9000` と `LedBulb` が共通の `Bulb` インターフェースを実装します。
+契約は「`turnOn()` の後は `isOn == true`、`turnOff()` の後は `isOn == false`。同じ操作を繰り返してもよい」です。
+`run(bulb, switch)` は、どちらの電球に置き換えても変更なしで利用できます。
+
+[テスト](src/test/kotlin/SmartHomeAppTests.kt)では、両方の電球に同じスイッチ操作を行い、オン／オフの切り替えと同じ操作の繰り返しを検証します。
+
 ### 💡 チャレンジ問題
 新しい家電を1つ追加してみましょう！（TV、エアコンなど）
 
